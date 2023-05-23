@@ -2,29 +2,49 @@ const User = require('../model/User');
 const bcrypt = require('bcrypt');
 
 const handleNewUser = async (req, res) => {
-    const { user, pwd } = req.body;
-    if (!user || !pwd) return res.status(400).json({ 'message': 'Username and password are required.' });
+  const {
+    email,
+    pwd,
+    roles,
+    fullName,
+    PhoneNumber,
+    BillingAddress,
+    ShippingAddress,
+  } = req.body;
+  if (!email || !pwd)
+    return res
+      .status(400)
+      .json({ message: 'Email and password are required.' });
 
-    // check for duplicate usernames in the db
-    const duplicate = await User.findOne({ username: user }).exec();
-    if (duplicate) return res.sendStatus(409); //Conflict 
+  // check for duplicate usernames in the db
+  const duplicates = await User.findOne({ email: email }).exec();
+  if (duplicates) return res.sendStatus(409); //Conflict
 
-    try {
-        //encrypt the password
-        const hashedPwd = await bcrypt.hash(pwd, 10);
+  const newuser = new User();
+  if (req.body?.email) newuser.email = req.body.email;
+  if (req.body?.roles) newuser.roles = req.body.roles;
+  if (req.body?.fullName) newuser.fullName = req.body.fullName;
+  if (req.body?.PhoneNumber) newuser.PhoneNumber = req.body.PhoneNumber;
+  if (req.body?.BillingAddress)
+    newuser.BillingAddress = req.body.BillingAddress;
+  if (req.body?.ShippingAddress)
+    newuser.ShippingAddress = req.body.ShippingAddress;
 
-        //create and store the new user
-        const result = await User.create({
-            "username": user,
-            "password": hashedPwd
-        });
+  try {
+    //encrypt the password
+    const hashedPwd = await bcrypt.hash(pwd, 10);
 
-        console.log(result);
+    //create and store the new user
+    newuser.email = email;
+    newuser.pwd = hashedPwd;
+    const result = await newuser.save();
 
-        res.status(201).json({ 'success': `New user ${user} created!` });
-    } catch (err) {
-        res.status(500).json({ 'message': err.message });
-    }
-}
+    console.log(result);
+
+    res.status(201).json({ success: `New user ${email} created!` });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
 
 module.exports = { handleNewUser };

@@ -1,0 +1,7 @@
+POST 'http://localhost:3500/register'
+Accept: application/json
+
+{
+    "email" : "admin",
+    "pwd" : "12345" 
+}

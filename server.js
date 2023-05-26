@@ -3,20 +3,18 @@ const express = require('express');
 const app = express();
 const path = require('path');
 const cors = require('cors');
-const corsOptions = require('./config/corsOptions');
 const { logger } = require('./middleware/logEvents');
 const errorHandler = require('./middleware/errorHandler');
 const verifyJWT = require('./middleware/verifyJWT');
+const credentials = require('./middleware/credentials.js');
+const corsOptions = require('./config/corsOptions');
 const cookieParser = require('cookie-parser');
-const credentials = require('./middleware/credentials');
 const mongoose = require('mongoose');
 const connectDB = require('./config/dbConn');
 const PORT = process.env.PORT || 3500;
 
-// Connect to MongoDB
 connectDB();
 
-// custom middleware logger
 app.use(logger);
 
 // Handle options credentials check - before CORS!
@@ -47,6 +45,7 @@ app.use('/logout', require('./routes/logout'));
 
 app.use(verifyJWT);
 app.use('/products', require('./routes/api/products'));
+app.use('/users', require('./routes/api/users'));
 
 app.all('*', (req, res) => {
   res.status(404);
